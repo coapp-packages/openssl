@@ -1,0 +1,75 @@
+#product-info  {
+    product-name: "openssl";
+    version: "1.0.0d";
+    original-source-location: "http://openssl.org/source/openssl-1.0.0d.tar.gz";
+    original-source-website: "http://openssl.org/";
+    license: "Custom - see LICENSE for detils";
+    packager: "Hamish C";
+}
+
+x86{
+    compiler: vc10;
+    platform: x86;
+     
+    uses: x86=@"..\zlib";
+
+    targets: { 
+        "out32dll\libeay32.dll",
+        "out32dll\libeay32.lib",
+        "out32dll\ssleay32.dll",
+        "out32dll\ssleay32.lib",       
+    };
+     
+    build-command:@"
+       set PATH=%PATH%;..\perl
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I../zlib -L../zlib/Release/x86 
+       call ms\do_nasm
+       call ms\do_ms
+       nmake -f ms\ntdll.mak
+    ";
+     
+    clean-command:@"
+        del /Q MINFO Makefile.bak Makefile crypto\buildinf.h crypto\opensslconf.h.bak crypto\opensslconf.h > NUL 2> NUL
+        pushd ms
+        del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc > NUL 2> NUL
+        popd
+        IF EXIST out32dll rmdir /Q /S out32dll > NUL 2> NUL
+        IF EXIST tmp32dll rmdir /Q /S tmp32dll > NUL 2> NUL
+        IF EXIST inc32 rmdir /Q /S inc32 > NUL 2> NUL
+    ";
+};
+
+x64 {
+    compiler: vc10;
+    platform: x64;
+
+	// uses: "..\perl";
+    uses: x64=@"..\zlib";
+     
+    targets: { 
+        "out64dll\libeay32.dll",
+        "out64dll\libeay32.lib",
+        "out64dll\ssleay32.dll",
+        "out64dll\ssleay32.lib",       
+    };
+     
+    build-command:@"
+       set PATH=%PATH%;..\perl
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I../zlib -L../zlib/Release/x64 
+
+       call ms\do_win64a
+       rem use powershell to create x64 build.  This will save headaches later when we come to build libssh
+       powershell -command ""Get-Content ms\ntdll.mak | ForEach-Object { $_ -replace \""out32dll\"", \""out64dll\"" } | ForEach-Object { $_ -replace \""tmp32dll\"", \""tmp64dll\"" } | ForEach-Object { $_ -replace \""inc32\"", \""inc64\"" } | Set-Content ms\ntdll64.mak""
+       nmake -f ms\ntdll64.mak
+    ";
+     
+    clean-command:@"
+        del /Q MINFO Makefile.bak Makefile crypto\buildinf.h crypto\opensslconf.h.bak crypto\opensslconf.h > NUL 2> NUL
+        pushd ms
+        del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc ntdll64.mak > NUL 2> NUL
+        popd
+        IF EXIST out64dll rmdir /Q /S out64dll > NUL 2> NUL
+        IF EXIST tmp64dll rmdir /Q /S tmp64dll > NUL 2> NUL
+        IF EXIST inc64 rmdir /Q /S inc64 > NUL 2> NUL
+    ";
+};
