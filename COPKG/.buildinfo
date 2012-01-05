@@ -1,13 +1,30 @@
 #product-info  {
     product-name: "openssl";
-    version: "1.0.0d";
-    original-source-location: "http://openssl.org/source/openssl-1.0.0d.tar.gz";
+    version: "1.0.0f";
+    original-source-location: "http://openssl.org/source/openssl-1.0.0f.tar.gz";
     original-source-website: "http://openssl.org/";
     license: "Custom - see LICENSE for detils";
-    packager: "Hamish C";
+    packager: "Hamish C, Vincent P, Garrett Serack";
 }
 
+/* 
+    Maintainer notes:
+    
+    After merging upstream branch, make sure you delete 
+    
+        Makefile
+        crypto\opensslconf.h
+        
+    (they get modified by the build anyway) 
+    
+    .. otherwise ptk verify will fail
+*/
+
+
 x86{
+    tools: { perl, nasm }; // we should have a check in PTK that can verify these are available.
+    
+
     compiler: vc10;
     platform: x86;
      
@@ -18,6 +35,7 @@ x86{
         "out32dll\libeay32.lib",
         "out32dll\ssleay32.dll",
         "out32dll\ssleay32.lib",       
+        "out32dll\openssl.exe",   
     };
      
     build-command:@"
@@ -50,7 +68,8 @@ x64 {
         "out64dll\libeay32.dll",
         "out64dll\libeay32.lib",
         "out64dll\ssleay32.dll",
-        "out64dll\ssleay32.lib",       
+        "out64dll\ssleay32.lib",  
+        "out64dll\openssl.exe",           
     };
      
     build-command:@"
@@ -70,6 +89,6 @@ x64 {
         popd
         IF EXIST out64dll rmdir /Q /S out64dll > NUL 2> NUL
         IF EXIST tmp64dll rmdir /Q /S tmp64dll > NUL 2> NUL
-        IF EXIST inc64 rmdir /Q /S inc64 > NUL 2> NUL
+        IF EXIST inc64 rmdir /Q /S inc64  > NUL 2> NUL
     ";
 };
