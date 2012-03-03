@@ -1,0 +1,30 @@
+// details for x64 version of openssl package
+// build with: autopackage x64.autopkg openssl.autopkg  
+@import "openssl.inc";
+
+#define { 
+    flavor: "vc10"; 
+    arch : "x64";
+}
+
+files[exes] {
+    root: @"..\out64dll\";
+    
+    include: {
+        "openssl.exe",
+    };
+    
+    trim-path: all;
+};
+
+
+files[dlls] {
+    root: @"..\out64dll\";
+  
+    include: {
+        "libeay32.dll",
+		"ssleay32.dll",
+    };
+    
+    trim-path: all;
+};

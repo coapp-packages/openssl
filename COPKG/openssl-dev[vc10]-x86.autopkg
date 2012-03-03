@@ -1,0 +1,19 @@
+// details for x86 version of openssl package
+// build with: autopackage openssl-dev[vc10]-x86.autopkg
+@import "openssl-dev.inc" ;
+
+#define { 
+    flavor: "vc10"; 
+    arch : "x86";
+}
+
+files[libs] {
+    root: @"..\out32dll\";
+    
+    include: {
+        "libeay32.lib",
+		"ssleay32.lib",
+    };
+    
+    trim-path: all;
+};

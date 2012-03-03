@@ -1,3 +1,5 @@
+@import "version.inc";
+
 #product-info  {
     product-name: "openssl";
     version: "1.0.0f";
@@ -20,6 +22,73 @@
     .. otherwise ptk verify will fail
 */
 
+test {
+    default : false;
+    uses: release;
+    build-command: @"rem";
+};
+
+package {
+    
+    default : false;
+    uses : sign;
+    
+    targets: { 
+        @"copkg\openssl[vc10]-${package-version}-x86.msi",
+        @"copkg\openssl-dev[vc10]-${package-version}-x86.msi",
+        @"copkg\openssl-dev-common-${package-version}-any.msi",
+        @"copkg\openssl[vc10]-${package-version}-x64.msi",
+        @"copkg\openssl-dev[vc10]-${package-version}-x64.msi"
+    };
+    
+    build-command : @"
+        REM THERE IS SOME GOOFY STUFF IN HERE TO WORK AROUND A COUPLE BUGS IN AUTOPACKAGE.
+        REM FIXES COMING SOON...
+        cd COPKG
+        coapp add-feed %cd%\
+        coapp --force-scan list 
+        autopackage openssl-dev-common.autopkg || goto failed
+        coapp --force-scan list 
+        autopackage openssl[vc10]-x86.autopkg openssl-dev[vc10]-x86.autopkg || goto failed
+        coapp --force-scan list 
+        autopackage openssl[vc10]-x64.autopkg openssl-dev[vc10]-x64.autopkg || goto failed
+        coapp --force-scan list 
+        coapp remove-feed %cd%\
+        ptk update-version
+    ";
+
+	clean-command: @"del COPKG\*.msi COPKG\*.wixpdb";
+	
+};
+
+
+update-version {
+    default : false;
+    
+    build-command : @"
+        REM auto-increment version.inc file...
+        
+        cd COPKG
+        setlocal EnableDelayedExpansion
+        for /F ""tokens=4,5,6,7  delims=.; "" %%v in (version.inc) do (
+            set /a build=%%y + 1
+            set VERSTRING=#define { package-version: %%v.%%w.%%x.!build!; }
+        )
+        echo !VERSTRING! > version.inc
+    ";
+}
+
+release {
+    set: BuildCfg="Release";
+    uses: x86;
+    uses: x64;
+};
+
+sign {
+    default : false;
+    uses: release;
+    build-command: @"simplesigner.exe --nologo --sign out32dll\**.dll out32dll\**.exe out64dll\**.dll out64dll\**.exe";
+};
 
 x86{
     tools: { perl, nasm }; // we should have a check in PTK that can verify these are available.
@@ -28,7 +97,7 @@ x86{
     compiler: vc10;
     platform: x86;
      
-    uses: x86=@"..\zlib";
+    uses: release=@"..\zlib";
 
     targets: { 
         "out32dll\libeay32.dll",
@@ -40,7 +109,7 @@ x86{
      
     build-command:@"
        set PATH=%PATH%;..\perl
-       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I../zlib -L../zlib/Release/x86 
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I../zlib -L../zlib/output/vc10/x86/release/lib
        call ms\do_nasm
        call ms\do_ms
        nmake -f ms\ntdll.mak
@@ -62,7 +131,7 @@ x64 {
     platform: x64;
 
 	// uses: "..\perl";
-    uses: x64=@"..\zlib";
+    uses: release=@"..\zlib";
      
     targets: { 
         "out64dll\libeay32.dll",
@@ -74,11 +143,11 @@ x64 {
      
     build-command:@"
        set PATH=%PATH%;..\perl
-       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I../zlib -L../zlib/Release/x64 
-
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I../zlib -L../zlib/output/vc10/x64/release/lib 
        call ms\do_win64a
-       rem use powershell to create x64 build.  This will save headaches later when we come to build libssh
-       powershell -command ""Get-Content ms\ntdll.mak | ForEach-Object { $_ -replace \""out32dll\"", \""out64dll\"" } | ForEach-Object { $_ -replace \""tmp32dll\"", \""tmp64dll\"" } | ForEach-Object { $_ -replace \""inc32\"", \""inc64\"" } | Set-Content ms\ntdll64.mak""
+       rem use powershell to create x64 build file
+       rem In some cases when cross compiling x64 on x86 errors are encountered (could be vm related?) due to compiler trying to compile the asm before it's fully generated, so need to insert a wee delay between the two
+       powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""out64dll\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""tmp64dll\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""inc64\"" } | ForEach-Object{ $_ -replace \""\`$\(ASM\) \"", \""@timeout /t 1`n`t`$(ASM) \"" } | sc ms\ntdll64.mak""
        nmake -f ms\ntdll64.mak
     ";
      
