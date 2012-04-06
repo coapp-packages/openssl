@@ -3,7 +3,7 @@
 
 #define { 
     flavor: "${comp??vc10}"; 
-    arch : "${comp??x86}";
+    arch : "${plat??x86}";
 }
 
 package {
