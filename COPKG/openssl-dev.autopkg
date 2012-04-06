@@ -1,0 +1,51 @@
+@import "version.inc" ;
+@import "outercurve.inc" ;
+
+#define { 
+    flavor: "${comp??vc10}"; 
+    arch : "${comp??x86}";
+}
+
+package {
+    name: "openssl-dev[${flavor}]";
+    version: "${package-version}";
+    arch : "${arch}";
+
+    display-name: "OpenSSL developer library";
+}
+
+metadata {
+    summary: "The OpenSSL developer library";
+    description: @"OpenSSL developer library"; 
+
+    icon: @"openssl.png";
+    
+    author-version : "1.0.0f";
+    bug-tracker: "https://github.com/coapp-packages/openssl/issues";
+    stability : "0";
+    licenses : {
+        openssl
+    };
+}
+
+files[libs] {
+    root: @"..\output\${flavor}\${arch}\Release";
+    
+    include: {
+        "libeay32.lib",
+		"ssleay32.lib",
+    };
+    
+    trim-path: all;
+};
+
+requires {
+    package: "openssl-dev-common-${package-version}-any-${Package.PublicKeyToken}";
+    package: "openssl[${flavor}]-${package-version}-${Package.Architecture}-${Package.PublicKeyToken}";
+}
+
+developer-library[openssl-dev[${flavor}]] {
+    libraries : {
+        libs
+    };
+}

@@ -23,117 +23,211 @@
 */
 
 test {
-}
+    set: {
+        COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86, x64}";
+    };
 
-package { 
     default : false;
-    uses : release;
-    
     build-command: @"
+        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}""
+        
+                
+        REM Start tests here...
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                pushd output\%%A\%%B\Release
+                for /F %%E in ('dir /b *test.exe') do (
+                    simplesigner --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=%%B"" %%E || goto failed
+                )
+                bftest.exe >nul || (echo bftestfailed... & goto failed)
+                bntest.exe >nul || (echo bntestfailed... & goto failed)
+                casttest.exe >nul || (echo casttestfailed... & goto failed)
+                destest.exe >nul || (echo destestfailed... & goto failed)
+                dhtest.exe >nul || (echo dhtestfailed... & goto failed)
+                dsatest.exe >nul || (echo dsatestfailed... & goto failed)
+                ecdhtest.exe >nul || (echo ecdhtestfailed... & goto failed)
+                ecdsatest.exe >nul || (echo ecdsatestfailed... & goto failed)
+                ectest.exe >nul || (echo ectestfailed... & goto failed)
+                enginetest.exe >nul || (echo enginetestfailed... & goto failed)
+                exptest.exe >nul || (echo exptestfailed... & goto failed)
+                hmactest.exe >nul || (echo hmactestfailed... & goto failed)
+                md4test.exe >nul || (echo md4testfailed... & goto failed)
+                md5test.exe >nul || (echo md5testfailed... & goto failed)
+                mdc2test.exe >nul || (echo mdc2testfailed... & goto failed)
+                randtest.exe >nul || (echo randtestfailed... & goto failed)
+                rc2test.exe >nul || (echo rc2testfailed... & goto failed)
+                rc4test.exe >nul || (echo rc4testfailed... & goto failed)
+                rmdtest.exe >nul || (echo rmdtestfailed... & goto failed)
+                rsa_test.exe >nul || (echo rsa_testfailed... & goto failed)
+                sha1test.exe >nul || (echo sha1testfailed... & goto failed)
+                shatest.exe >nul || (echo shatestfailed... & goto failed)
+                wp_test.exe >nul || (echo wp_testfailed... & goto failed)
+                popd
+            )
+        )
     ";
+};
+
+package {
+    set: {
+        COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86, x64}";
+    };
+    default : false;
     
-    clean-command: @"
+    targets: { 
+        @"copkg\openssl[vc10]-${package-version}-x86.msi",
+        @"copkg\openssl-dev[vc10]-${package-version}-x86.msi",
+        @"copkg\openssl-dev-common-${package-version}-any.msi",
+        @"copkg\openssl[vc10]-${package-version}-x64.msi",
+        @"copkg\openssl-dev[vc10]-${package-version}-x64.msi"
+    };
+    
+    build-command : @"
+        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}""
+
+        REM Need to perform some initial file mojo here to cover the various include files... (OpenSSL specific)
+        pushd output
+            if not exist includes mkdir includes
+            set COMP_DIR=NA
+            for /F %%A in ('dir /b') do set COMP_DIR=%%A
+            copy /y %COMP_DIR%\x86\release\include\openssl\* includes\
+            pushd includes
+                ren opensslconf.h opensslconf_x86.h
+                copy /y ..\%COMP_DIR%\x64\release\include\openssl\opensslconf.h .\opensslconf_x64.h
+                copy /y ..\..\COPKG\opensslconf.h .\
+            popd
+        popd
+    
+        REM THERE IS SOME GOOFY STUFF IN HERE TO WORK AROUND A COUPLE BUGS IN AUTOPACKAGE.
+        REM FIXES COMING SOON...
+        cd COPKG
+        coapp add-feed ""%cd%""
+        autopackage openssl-dev-common.autopkg || goto failed
+        coapp --force-scan list 
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                autopackage openssl.autopkg openssl-dev.autopkg --COMP=%%A --PLAT=%%B
+            )
+        )
+        coapp remove-feed ""%cd%""
+        ptk update-version
+    ";
+
+	clean-command: @"
+        del COPKG\*.msi COPKG\*.wixpdb
+        pushd output
+        rd /s /q includes
+        popd
+    ";
+	
+};
+
+
+update-version {
+    default : false;
+    
+    build-command : @"
+        REM auto-increment version.inc file...
+        
+        cd COPKG
+        setlocal EnableDelayedExpansion
+        for /F ""tokens=4,5,6,7  delims=.; "" %%v in (version.inc) do (
+            set /a build=%%y + 1
+            set VERSTRING=#define { package-version: %%v.%%w.%%x.!build!; }
+        )
+        echo !VERSTRING! > version.inc
     ";
 }
 
 release {
-    uses : { tools, /*x86, */ x64 };
-
-    set: { 
-        BUILD_CFG ="release";
+    set: {
+        BuildCfg="Release";
+        COMP="${COMP??vc10}";
+        PLAT="${PLAT??x86, x64}";
     };
-    
-    
     build-command: @"
+        for %%A in (${COMP}) do (
+            for %%B in (${PLAT}) do (
+                ptk --nologo %%B --COMP=%%A
+            )
+        )
     ";
-    
+};
+
+all {
+    default: false;
     clean-command: @"
+        rmdir /s /q intermediate        > nul 2> nul
+        rmdir /s /q output              > nul 2> nul
+        del COPKG\*.msi COPKG\*.wixpdb  > nul 2> nul
     ";
-}
-
-debug {
-
-    uses : { prep, x86, x64 };
-
-    set: { 
-        BUILD_CFG ="debug";
-    };
-
-    
-    build-command: @"
-    ";
-    
-    clean-command: @"
-    ";
-
-}
-
-tools{
-    default : false;
-    
-    requires: {
-        "nasm-2.10.8-x86-1e373a58e25250cb", // need nasm installed to do assembly
-        // "perl...?", // need perl installed to to perl scripts
-    };
-}
+};
 
 prep {
     default : false;
 
     build-command:@"
         mkdir intermediate
-        mkdir intermediate\${OUTPUT_ARCH}
-        mkdir intermediate\${OUTPUT_ARCH}\${BUILD_CFG}
+        mkdir intermediate\${COMP}
+        mkdir intermediate\${COMP}\${OUTPUT_ARCH}
+        mkdir intermediate\${COMP}\${OUTPUT_ARCH}\${BuildCfg}
         
         mkdir output
-        mkdir output\${OUTPUT_ARCH}
-        mkdir output\${OUTPUT_ARCH}\${BUILD_CFG}
-        mkdir output\${OUTPUT_ARCH}\${BUILD_CFG}\include
+        mkdir output\${COMP}
+        mkdir output\${COMP}\${OUTPUT_ARCH}
+        mkdir output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}
+        mkdir output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include
     ";
-    
+
     clean-command:@"
-        rmdir /s /q intermediate\${OUTPUT_ARCH}\${BUILD_CFG}        > nul 2> nul
-        rmdir /s /q intermediate\${OUTPUT_ARCH}                     > nul 2> nul
+        rmdir /s /q intermediate\${COMP}\${OUTPUT_ARCH}\${BuildCfg} > nul 2> nul
+        rmdir /s /q intermediate\${COMP}\${OUTPUT_ARCH}             > nul 2> nul
+        rmdir /s /q intermediate\${COMP}                            > nul 2> nul
         rmdir /s /q intermediate                                    > nul 2> nul
         
-        rmdir /s /q output\${OUTPUT_ARCH}\${BUILD_CFG}\include > nul 2> nul
-        rmdir /s /q output\${OUTPUT_ARCH}\${BUILD_CFG}        > nul 2> nul
-        rmdir /s /q output\${OUTPUT_ARCH}                     > nul 2> nul
-        rmdir /s /q output                                    > nul 2> nul
+        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include   > nul 2> nul
+        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}           > nul 2> nul
+        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}                       > nul 2> nul
+        rmdir /s /q output\${COMP}                                      > nul 2> nul
+        rmdir /s /q output                                              > nul 2> nul
     ";    
-}
+};
 
+	
 x86{
-    compiler: vc10;
-    platform: x86;
-    uses : prep;
+    tools: { perl, nasm }; // we should have a check in PTK that can verify these are available.
     
-    requires: "zlib-dev[vc10]-1.2.5-x86-1e373a58e25250cb";
+	set: COMP="${COMP??vc10}";
+    set: OUTPUT_ARCH="x86";
+    uses : prep;
 
-    set: { 
-        OUTPUT_ARCH="x86";
-        OUTPUT_VERSION="${package-version}"; // this got picked up from the @import rule at the top.
-    };
+	
+    compiler: "${COMP}";
+    platform: x86;
+     
+	requires: "zlib-dev[${COMP}]-1-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "nasm-2-1e373a58e25250cb";
 
     targets: { 
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\libeay32.dll",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\libeay32.lib",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\ssleay32.dll",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\ssleay32.lib",       
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\openssl.exe",   
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.dll",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.lib",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.dll",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.lib",       
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\openssl.exe",   
     };
      
     build-command:@"
         REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
         echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED -I %cd%\output
         
-        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I%COAPP%/include/zlib -L%COAPP%/lib/x86             || goto failed
-        call ms\do_nasm                                                                                                     || goto failed
-        call ms\do_ms                                                                                                       || goto failed
-        nmake -f ms\ntdll.mak                                                                                               || goto failed
-        
-        REM use simplesigner to add zlib to the dll manifests
-        simplesigner --reference-assembly=""zlib, Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=x86"" out32dll\ssleay32.dll out32dll\libeay32.dll || goto failed
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x86""
+       call ms\do_nasm
+       call ms\do_ms
+   	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll86.mak""
+
+       nmake -f ms\ntdll86.mak
     ";
      
     clean-command:@"
@@ -141,44 +235,41 @@ x86{
         pushd ms
         del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc > NUL 2> NUL
         popd
-        IF EXIST out32dll rmdir /Q /S out32dll > NUL 2> NUL
-        IF EXIST tmp32dll rmdir /Q /S tmp32dll > NUL 2> NUL
-        IF EXIST inc32 rmdir /Q /S inc32 > NUL 2> NUL
     ";
 };
 
 x64 {
-    compiler: vc10;
+	set: COMP="${COMP??vc10}";
+    set: OUTPUT_ARCH="x64";
+    uses : prep;
+	
+    compiler: "${COMP}";
     platform: x64;
 
-    requires: "zlib-dev[vc10]-1.2.5-x64-1e373a58e25250cb";
-     
-    set: { 
-        OUTPUT_ARCH="x64";
-        OUTPUT_VERSION="${package-version}"; // this got picked up from the @import rule at the top.
-    };     
+	requires: "zlib-dev[${COMP}]-1-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "nasm-2-1e373a58e25250cb";
      
     targets: { 
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\libeay32.dll",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\libeay32.lib",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\ssleay32.dll",
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\ssleay32.lib",  
-        "output\${OUTPUT_ARCH}\${BUILD_CFG}\openssl.exe",           
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.dll",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.lib",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.dll",
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.lib",  
+        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\openssl.exe", 
     };
      
     build-command:@"
         REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
         echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED -I %cd%\output
         
-        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I%COAPP%/include/zlib -L%COAPP%/lib/x64        || goto failed
+       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x64"" 
+       call ms\do_win64a
+       rem use powershell to create x64 build file
+       
+       rem Old :  In some cases when cross compiling x64 on x86 errors are encountered (could be vm related?) due to compiler trying to compile the asm before it's fully generated, so need to insert a wee delay between the two
+       REM Old :  powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | ForEach-Object{ $_ -replace \""\`$\(ASM\) \"", \""@timeout /t 1`n`t`$(ASM) \"" } | sc ms\ntdll64.mak""
 
-        call ms\do_win64a                                                                                               || goto failed
-        rem use powershell to create x64 build.  This will save headaches later when we come to build libssh
-        powershell -command ""Get-Content ms\ntdll.mak | ForEach-Object { $_ -replace \""out32dll\"", \""output\${OUTPUT_ARCH}\${BUILD_CFG}\"" } | ForEach-Object { $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BUILD_CFG}\"" } | ForEach-Object { $_ -replace \""inc32\"", \""output\${OUTPUT_ARCH}\${BUILD_CFG}\include\"" } | Set-Content ms\ntdll64.mak""
-        nmake -f ms\ntdll64.mak                                                                                         || goto failed
-        
-        REM use simplesigner to add zlib to the dll manifests
-        simplesigner --reference-assembly=""zlib, Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=x64"" output\${OUTPUT_ARCH}\${BUILD_CFG}\ssleay32.dll output\${OUTPUT_ARCH}\${BUILD_CFG}\libeay32.dll || goto failed
+	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll64.mak""
+       nmake -f ms\ntdll64.mak	|| goto failed
     ";
      
     clean-command:@"
@@ -186,8 +277,5 @@ x64 {
         pushd ms
         del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc ntdll64.mak > NUL 2> NUL
         popd
-        IF EXIST out64dll rmdir /Q /S out64dll > NUL 2> NUL
-        IF EXIST tmp64dll rmdir /Q /S tmp64dll > NUL 2> NUL
-        IF EXIST inc64 rmdir /Q /S inc64  > NUL 2> NUL
     ";
 };
