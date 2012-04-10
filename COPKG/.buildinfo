@@ -38,7 +38,7 @@ test {
             for %%B in (${PLAT}) do (
                 pushd output\%%A\%%B\Release
                 for /F %%E in ('dir /b *test.exe') do (
-                    simplesigner --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=%%B"" %%E || goto failed
+                    simplesigner --nologo --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=%%B"" %%E || goto failed
                 )
                 bftest.exe >nul || (echo bftestfailed... & goto failed)
                 bntest.exe >nul || (echo bntestfailed... & goto failed)
@@ -207,7 +207,7 @@ x86{
     compiler: "${COMP}";
     platform: x86;
      
-	requires: "zlib-dev[${COMP}]-1-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-1e373a58e25250cb";
 	requires: "nasm-2-1e373a58e25250cb";
 
     targets: { 
@@ -246,7 +246,7 @@ x64 {
     compiler: "${COMP}";
     platform: x64;
 
-	requires: "zlib-dev[${COMP}]-1-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-1e373a58e25250cb";
 	requires: "nasm-2-1e373a58e25250cb";
      
     targets: { 
