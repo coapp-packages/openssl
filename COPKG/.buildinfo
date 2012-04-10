@@ -37,32 +37,10 @@ test {
         for %%A in (${COMP}) do (
             for %%B in (${PLAT}) do (
                 pushd output\%%A\%%B\Release
-                for /F %%E in ('dir /b *test.exe') do (
+                for /F %%E in ('type ..\..\..\..\COPKG\tests.txt') do (
                     simplesigner --nologo --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=%%B"" %%E || goto failed
+                    %%E > nul || (echo %%E failed... & goto failed)
                 )
-                bftest.exe >nul || (echo bftestfailed... & goto failed)
-                bntest.exe >nul || (echo bntestfailed... & goto failed)
-                casttest.exe >nul || (echo casttestfailed... & goto failed)
-                destest.exe >nul || (echo destestfailed... & goto failed)
-                dhtest.exe >nul || (echo dhtestfailed... & goto failed)
-                dsatest.exe >nul || (echo dsatestfailed... & goto failed)
-                ecdhtest.exe >nul || (echo ecdhtestfailed... & goto failed)
-                ecdsatest.exe >nul || (echo ecdsatestfailed... & goto failed)
-                ectest.exe >nul || (echo ectestfailed... & goto failed)
-                enginetest.exe >nul || (echo enginetestfailed... & goto failed)
-                exptest.exe >nul || (echo exptestfailed... & goto failed)
-                hmactest.exe >nul || (echo hmactestfailed... & goto failed)
-                md4test.exe >nul || (echo md4testfailed... & goto failed)
-                md5test.exe >nul || (echo md5testfailed... & goto failed)
-                mdc2test.exe >nul || (echo mdc2testfailed... & goto failed)
-                randtest.exe >nul || (echo randtestfailed... & goto failed)
-                rc2test.exe >nul || (echo rc2testfailed... & goto failed)
-                rc4test.exe >nul || (echo rc4testfailed... & goto failed)
-                rmdtest.exe >nul || (echo rmdtestfailed... & goto failed)
-                rsa_test.exe >nul || (echo rsa_testfailed... & goto failed)
-                sha1test.exe >nul || (echo sha1testfailed... & goto failed)
-                shatest.exe >nul || (echo shatestfailed... & goto failed)
-                wp_test.exe >nul || (echo wp_testfailed... & goto failed)
                 popd
             )
         )
