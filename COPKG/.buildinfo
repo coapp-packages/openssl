@@ -81,15 +81,12 @@ package {
         REM THERE IS SOME GOOFY STUFF IN HERE TO WORK AROUND A COUPLE BUGS IN AUTOPACKAGE.
         REM FIXES COMING SOON...
         cd COPKG
-        coapp add-feed ""%cd%""
         autopackage openssl-dev-common.autopkg || goto failed
-        coapp --force-scan list 
         for %%A in (${COMP}) do (
             for %%B in (${PLAT}) do (
                 autopackage openssl.autopkg openssl-dev.autopkg --COMP=%%A --PLAT=%%B
             )
         )
-        coapp remove-feed ""%cd%""
         ptk update-version
     ";
 
