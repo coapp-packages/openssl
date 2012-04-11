@@ -1,4 +1,5 @@
 @import "version.inc" ;
+@import "compat.inc";
 @import "outercurve.inc" ;
 
 package {
@@ -48,7 +49,7 @@ files[docs] {
 }
 
 // the 'name' of the developer library isn't terribly important...
-developer-library[openssl-common] {
+developer-library[openssl] {
     headers: { 
         headers
     };
