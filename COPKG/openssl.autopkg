@@ -33,7 +33,7 @@ files[files-to-sign] {
 }
 
 requires {
-    package: "zlib[${flavor}]-1.2-${Package.Architecture}-${Package.PublicKeyToken}";
+    package: "zlib[${flavor}]-1.2-${Package.Architecture}-1e373a58e25250cb";
 }
 
 files[exes] {
