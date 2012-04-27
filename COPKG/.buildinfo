@@ -2,8 +2,8 @@
 
 #product-info  {
     product-name: "openssl";
-    version: "1.0.0f";
-    original-source-location: "http://openssl.org/source/openssl-1.0.0f.tar.gz";
+    version: "1.0.0i";
+    original-source-location: "http://openssl.org/source/openssl-1.0.0i.tar.gz";
     original-source-website: "http://openssl.org/";
     license: "Custom - see LICENSE for detils";
     packager: "Hamish C, Vincent P, Garrett Serack";
