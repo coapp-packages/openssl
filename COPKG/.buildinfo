@@ -202,7 +202,7 @@ x86{
        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x86""
        call ms\do_nasm
        call ms\do_ms
-   	   start /wait "" powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll86.mak""
+   	   start /wait "" ""powershell -command ^""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \^""out32dll\^"", \^""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\^"" } | ForEach-Object{ $_ -replace \^""tmp32dll\^"", \^""intermediate\${OUTPUT_ARCH}\${BuildCfg}\^"" } | ForEach-Object{ $_ -replace \^""inc32\^"", \^""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\^"" } | sc ms\ntdll86.mak^""""
 
        nmake -f ms\ntdll86.mak
     ";
@@ -245,7 +245,7 @@ x64 {
        rem Old :  In some cases when cross compiling x64 on x86 errors are encountered (could be vm related?) due to compiler trying to compile the asm before it's fully generated, so need to insert a wee delay between the two
        REM Old :  powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | ForEach-Object{ $_ -replace \""\`$\(ASM\) \"", \""@timeout /t 1`n`t`$(ASM) \"" } | sc ms\ntdll64.mak""
 
-	   start /wait "" powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll64.mak""
+	   start /wait "" ""powershell -command ^""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \^""out32dll\^"", \^""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\^"" } | ForEach-Object{ $_ -replace \^""tmp32dll\^"", \^""intermediate\${OUTPUT_ARCH}\${BuildCfg}\^"" } | ForEach-Object{ $_ -replace \^""inc32\^"", \^""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\^"" } | sc ms\ntdll64.mak^""""
        nmake -f ms\ntdll64.mak	|| goto failed
     ";
      
