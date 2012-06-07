@@ -1,5 +1,9 @@
 @import "version.inc";
 
+#define {
+    NewVersion : "${package-version++}";
+}
+
 #product-info  {
     product-name: "openssl";
     version: "1.0.0i";
@@ -55,11 +59,11 @@ package {
     default : false;
     
     targets: { 
-        @"copkg\openssl[vc10]-${package-version}-x86.msi",
-        @"copkg\openssl-dev[vc10]-${package-version}-x86.msi",
-        @"copkg\openssl-dev-common-${package-version}-any.msi",
-        @"copkg\openssl[vc10]-${package-version}-x64.msi",
-        @"copkg\openssl-dev[vc10]-${package-version}-x64.msi"
+        @"copkg\openssl[vc10]-${NewVersion}-x86.msi",
+        @"copkg\openssl-dev[vc10]-${NewVersion}-x86.msi",
+        @"copkg\openssl-dev-common-${NewVersion}-any.msi",
+        @"copkg\openssl[vc10]-${NewVersion}-x64.msi",
+        @"copkg\openssl-dev[vc10]-${NewVersion}-x64.msi"
     };
     
     build-command : @"
@@ -106,13 +110,11 @@ update-version {
     build-command : @"
         REM auto-increment version.inc file...
         
-        cd COPKG
+        pushd COPKG
         setlocal EnableDelayedExpansion
-        for /F ""tokens=4,5,6,7  delims=.; "" %%v in (version.inc) do (
-            set /a build=%%y + 1
-            set VERSTRING=#define { package-version: %%v.%%w.%%x.!build!; }
-        )
+        set VERSTRING=#define { package-version: ${NewVersion}; }
         echo !VERSTRING! > version.inc
+        popd
     ";
 }
 
