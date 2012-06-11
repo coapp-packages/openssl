@@ -34,9 +34,8 @@ test {
 
     default : false;
     build-command: @"
-        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}""
+        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}"" || goto failed
         
-                
         REM Start tests here...
         for %%A in (${COMP}) do (
             for %%B in (${PLAT}) do (
@@ -67,7 +66,8 @@ package {
     };
     
     build-command : @"
-        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}""
+        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}"" || goto failed
+        if ""${noversion}"" neq ""true"" ptk update-version --nologo || goto failed
 
         REM Need to perform some initial file mojo here to cover the various include files... (OpenSSL specific)
         pushd output
@@ -91,7 +91,6 @@ package {
                 autopackage openssl.autopkg openssl-dev.autopkg --COMP=%%A --PLAT=%%B
             )
         )
-        ptk update-version
     ";
 
 	clean-command: @"
@@ -127,7 +126,8 @@ release {
     build-command: @"
         for %%A in (${COMP}) do (
             for %%B in (${PLAT}) do (
-                ptk --nologo %%B --COMP=%%A
+                ptk --nologo %%B --COMP=%%A || goto failed
+                ptk clean --nologo %%B --COMP=%%A || goto failed
             )
         )
     ";
@@ -163,12 +163,6 @@ prep {
         rmdir /s /q intermediate\${COMP}\${OUTPUT_ARCH}             > nul 2> nul
         rmdir /s /q intermediate\${COMP}                            > nul 2> nul
         rmdir /s /q intermediate                                    > nul 2> nul
-        
-        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include   > nul 2> nul
-        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}           > nul 2> nul
-        rmdir /s /q output\${COMP}\${OUTPUT_ARCH}                       > nul 2> nul
-        rmdir /s /q output\${COMP}                                      > nul 2> nul
-        rmdir /s /q output                                              > nul 2> nul
     ";    
 };
 
