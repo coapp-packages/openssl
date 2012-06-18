@@ -5,19 +5,19 @@
 #define OPENSSLCONF_BRIDGE
 #  if defined(_MSC_VER) 
 #    if defined(_M_IA64) || defined(_M_X64) || defined(_WIN64)
-#include <opensslconf_x64.h>
+#include <openssl/opensslconf_x64.h>
 #    else 
-#include <opensslconf_x86.h>
+#include <openssl/opensslconf_x86.h>
 #    endif 
 #  elif defined(__GNUG__) 
 #    if defined(__x86_64__) || defined(__ia64__) 
-#include <opensslconf_x64.h>
+#include <openssl/opensslconf_x64.h>
 #    else 
-#include <opensslconf_x86.h>
+#include <openssl/opensslconf_x86.h>
 #    endif 
 #  elif defined(_x64) || defined(x64)
-#include <opensslconf_x64.h>
+#include <openssl/opensslconf_x64.h>
 #  else
-#include <opensslconf_x86.h>
+#include <openssl/opensslconf_x86.h>
 #  endif 
 #endif 
