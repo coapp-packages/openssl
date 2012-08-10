@@ -191,7 +191,7 @@ x86{
      
     build-command:@"
         REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
-        echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED/U NOUSER  -I %cd%\output
+        echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED /U NOUSER -I %cd%\output
         
        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x86""
        call ms\do_nasm
