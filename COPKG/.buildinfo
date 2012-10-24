@@ -1,12 +1,17 @@
 @import "version.inc";
 
+#define {
+	PKT: "${pkt??1e373a58e25250cb}"; /* Ben's Public Key Token is 4f3043f9437157a6 */
+	NMAKE: "nmake";
+}
+
 #product-info  {
     product-name: "openssl";
-    version: "1.0.0i";
-    original-source-location: "http://openssl.org/source/openssl-1.0.0i.tar.gz";
+    version: "1.0.1c";
+    original-source-location: "http://openssl.org/source/openssl-1.0.1c.tar.gz";
     original-source-website: "http://openssl.org/";
     license: "Custom - see LICENSE for detils";
-    packager: "Hamish C, Vincent P, Garrett Serack";
+    packager: "Ben Herila, Hamish C, Vincent P, Garrett Serack";
 }
 
 /* 
@@ -24,7 +29,7 @@
 
 test {
     set: {
-        COMP="${COMP??vc10}";
+        COMP="${COMP??vc11, vc10}";
         PLAT="${PLAT??x86, x64}";
     };
 
@@ -38,7 +43,7 @@ test {
             for %%B in (${PLAT}) do (
                 pushd output\%%A\%%B\Release
                 for /F %%E in ('type ..\..\..\..\COPKG\tests.txt') do (
-                    simplesigner --nologo --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=1e373a58e25250cb, ProcessorArchitecture=%%B"" %%E || goto failed
+                    simplesigner --nologo --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=${PKT}, ProcessorArchitecture=%%B"" %%E || goto failed
                     %%E > nul || (echo %%E failed... & goto failed)
                 )
                 popd
@@ -49,7 +54,7 @@ test {
 
 package {
     set: {
-        COMP="${COMP??vc10}";
+        COMP="${COMP??vc11, vc10}";
         PLAT="${PLAT??x86, x64}";
     };
     default : false;
@@ -119,7 +124,7 @@ update-version {
 release {
     set: {
         BuildCfg="Release";
-        COMP="${COMP??vc10}";
+        COMP="${COMP??vc11, vc10}";
         PLAT="${PLAT??x86, x64}";
     };
     build-command: @"
@@ -134,6 +139,7 @@ release {
 all {
     default: false;
     clean-command: @"
+		nmake /f ms\ntdll86.mak clean   > nul 2> nul
         rmdir /s /q intermediate        > nul 2> nul
         rmdir /s /q output              > nul 2> nul
         del COPKG\*.msi COPKG\*.wixpdb  > nul 2> nul
@@ -174,7 +180,7 @@ prep {
 x86{
     tools: { perl, nasm }; // we should have a check in PTK that can verify these are available.
     
-	set: COMP="${COMP??vc10}";
+	set: COMP="${COMP??vc11}";
     set: OUTPUT_ARCH="x86";
     uses : prep;
 
@@ -182,7 +188,7 @@ x86{
     compiler: "${COMP}";
     platform: x86;
      
-	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-${PKT}";
 	requires: "nasm-2-1e373a58e25250cb";
 
     targets: { 
@@ -194,15 +200,15 @@ x86{
     };
      
     build-command:@"
-        REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
-        echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED -I %cd%\output
-        
+       REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
+       echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED -I %cd%\output
+       echo on
+	   echo %COAPP%/include/zlib
        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x86""
-       call ms\do_nasm
-       call ms\do_ms
-   	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll86.mak""
-
-       nmake -f ms\ntdll86.mak
+	   call ms\do_nasm
+	   call ms\do_ms
+	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}/include\"" } | sc ms\ntdll86.mak""
+       ${NMAKE} -f ms\ntdll86.mak
     ";
      
     clean-command:@"
@@ -221,7 +227,7 @@ x64 {
     compiler: "${COMP}";
     platform: x64;
 
-	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-1e373a58e25250cb";
+	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-${PKT}";
 	requires: "nasm-2-1e373a58e25250cb";
      
     targets: { 
@@ -238,13 +244,16 @@ x64 {
         
        perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x64"" 
        call ms\do_win64a
-       rem use powershell to create x64 build file
-       
-       rem Old :  In some cases when cross compiling x64 on x86 errors are encountered (could be vm related?) due to compiler trying to compile the asm before it's fully generated, so need to insert a wee delay between the two
-       REM Old :  powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | ForEach-Object{ $_ -replace \""\`$\(ASM\) \"", \""@timeout /t 1`n`t`$(ASM) \"" } | sc ms\ntdll64.mak""
 
-	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll64.mak""
-       nmake -f ms\ntdll64.mak	|| goto failed
+       REM use powershell to create x64 build file
+	   REM ---------
+       REM Old: In some cases when cross compiling x64 on x86 errors are encountered (could be vm related?) due to compiler trying to compile the asm before it's fully generated, so need to insert a wee delay between the two
+       REM Old: powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | ForEach-Object{ $_ -replace \""\`$\(ASM\) \"", \""@timeout /t 1`n`t`$(ASM) \"" } | sc ms\ntdll64.mak""
+	   REM Old: powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate\${OUTPUT_ARCH}\${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include\"" } | sc ms\ntdll64.mak""
+	   
+	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}/include\"" } | sc ms\ntdll64.mak""
+
+       ${NMAKE} -f ms\ntdll64.mak	|| goto failed
     ";
      
     clean-command:@"

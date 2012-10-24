@@ -1,0 +1,6 @@
+output
+intermediate
+*.obj
+*.dll
+*.lib
+*.exe
