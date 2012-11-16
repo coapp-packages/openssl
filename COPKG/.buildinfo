@@ -17,6 +17,11 @@
 
 /* 
     Maintainer notes:
+
+    After extracting a tarball, make sure that the file "include/openssl/aes.h"
+    contains something that looks like a header file, rather than a single line
+    with the content "../../crypto/aes/aes.h". If it is a single line, that
+    means symlinks were extracted from the tarball incorrectly.
     
     After merging upstream branch, make sure you delete 
     
