@@ -1,0 +1,60 @@
+@import "version.inc" ;
+@import "compat.inc";
+@import "outercurve.inc" ;
+
+package {
+    name: "openssl-dev-common";
+    version: "${package-version}";
+    arch: any;
+    display-name: "OpenSSL Dev Library-common";
+}
+
+metadata {
+    summary: "The OpenSSL developer library (common)";
+    description: @"OpenSSL developer library - common files"; 
+        
+    icon: @"openssl.png";
+    
+    author-version : "1.0.0f";
+    bug-tracker: "https://github.com/coapp-packages/openssl/issues";
+    stability : "0";
+    licenses : {
+        openssl
+    };
+}
+
+files[headers] {
+    root: "..\\output\\includes";
+    include: {
+        "*.h"
+    };
+    
+    trim-path:all;
+    
+    // ensures that all the header files end up in a subfolder called 'include'
+    destination-path:"include";
+}
+
+files[docs] {
+    root: "..\\doc\\";
+    include: {
+        "*"
+    };
+    
+    trim-path:minimal;
+    
+    // ensures that all the documentation files end up in a subfolder called 'docs'
+    destination-path:"docs";
+
+}
+
+// the 'name' of the developer library isn't terribly important...
+developer-library[openssl] {
+    headers: { 
+        headers
+    };
+    
+    docs: {
+        docs
+    };
+}

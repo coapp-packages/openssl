@@ -1,130 +1,156 @@
-@import "version.inc";
-@import "compat.inc";
-@import "outercurve.inc";
-
-#define { 
-    flavor: "${comp??vc10}"; 
-    arch : "${plat??x86}";
-}
+@import basic.autopkg;
+@import @"version.inc";
+@import @"zlib_dep.autopkg";
 
 
-package {
-    name: "openssl[${flavor}]";
-    version: "${package-version}";
-    arch : "${arch}";
-    
-    display-name: "OpenSSL";
-    location: "http://coapp.org/repository/${OutputFilename}";
-
-    feed: "http://coapp.org/repository/packages.atom.xml";
-    publisher: "CoApp Project";
-}
-
-license[openssl] {
-    license-url: "http://www.openssl.org/source/license.html";
-    license-type: "openssl";
-}
-
-files[files-to-sign] {
-    include: { 
-        exes,
-        dlls
-    };
-}
-
-requires {
-    package: "zlib[${flavor}]-1.2-${Package.Architecture}-1e373a58e25250cb";
-}
-
-files[exes] {
-    root: @"..\output\${flavor}\${arch}\Release";
-    
-    include: {
-        "openssl.exe",
-    };
-    
-    trim-path: all;
+configurations {
+	Linkage {
+		// the first choice is the default
+		// so, unless a choice is made, it will assume the first choice
+		choices: { dynamic, 
+//					static 
+				};
+	}
 };
 
+nuget {
+	// the nuspec file metadata. Gets created/updated on build
+	nuspec {
+		id = openssl;
+		version : ${package-version};
+		title: The OpenSSL library;
+		authors: {Mark J. Cox, Ralf S. Engelschall, Dr. Stephen Henson, Ben Laurie, Garrett Serack, Tim Rogers};
+		owners: {CoApp Project, Garrett Serack};
+		licenseUrl: "http://www.openssl.org/source/license.html";
+		projectUrl: "http://github.com/coapp-packages/openssl";
+		iconUrl: "http://www.openssl.org/images/page-head-tm.jpg";
+		requireLicenseAcceptance:false;
+		summary:An OpenSSL library;
+		description: @"Native OpenSSL library.
+	OpenSSL homepage:  http://www.openssl.org";
+		releaseNotes: "Release of OpenSSL 1.0.1e libraries.";
+		copyright: Copyright 2013;
+		tags: { openssl, native, CoApp };
 
-files[dlls] {
-    root: @"..\output\${flavor}\${arch}\Release";
-  
-    include: {
-        "libeay32.dll",
-		"ssleay32.dll",
-    };
+		// .dependency { id : ...; version : ...; }
+		// .dependency { id : ...; version : ...; }
+		// .dependency { id : ...; version : ...; }
+
+	};
+
+	// the files that go into the content folders
+	// (inserted into the nuspec file)
+	files {
+		include: {
+			#destination = ${d_root}\include\${condition}\openssl;
+
+			..\output\common\**\*
+		};
+		
+		docs: {  ..\doc\**\* };
     
-    trim-path: all;
-};
+		// zlib deps
+		/*
+		[Win32,v110,dynamic] 
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\Win32\v110\dynamic\zlib1.dll};
+		
+		[x64,v110,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\x64\v110\dynamic\zlib1.dll};
+				
+		[Win32,v100,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\Win32\v100\dynamic\zlib1.dll};
+		
+		[x64,v100,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\x64\v100\dynamic\zlib1.dll};
+		*/
+	
+		[Win32,v110,dynamic] { 
+			alsoInclude : {
+				#destination = ${d_root}\include\${condition}\openssl;
+				..\output\v110\x86\release\include\openssl\opensslconf.h
+			};
+			lib: { 
+				..\output\v110\x86\release\libeay32.lib,
+				..\output\v110\x86\release\ssleay32.lib
+			};
+			bin += { 
+				..\output\v110\x86\release\libeay32.dll,
+				..\output\v110\x86\release\ssleay32.dll
+			};
+		}
 
-metadata {
-    summary: "openssl";
-    description:  @"openssl"; 
+		[x64,v110,dynamic] {
+			alsoInclude : {
+				#destination = ${d_root}\include\${condition}\openssl;
+				..\output\v110\x64\release\include\openssl\opensslconf.h
+			};
+			lib: { 
+				..\output\v110\x64\release\libeay32.lib,
+				..\output\v110\x64\release\ssleay32.lib
+			};
+			bin += { 
+				..\output\v110\x64\release\libeay32.dll,
+				..\output\v110\x64\release\ssleay32.dll
+			};
+		}
+		
+		[Win32,v100,dynamic] { 
+			alsoInclude : {
+				#destination = ${d_root}\include\${condition}\openssl;
+				..\output\v100\x86\release\include\openssl\opensslconf.h
+			};
+			lib: { 
+				..\output\v100\x86\release\libeay32.lib,
+				..\output\v100\x86\release\ssleay32.lib
+			};
+			bin += { 
+				..\output\v100\x86\release\libeay32.dll,
+				..\output\v100\x86\release\ssleay32.dll
+			};
+		}
 
-    icon: @"openssl.png";
-    
-    author-version : "1.0.0f";
-    bug-tracker: "https://github.com/coapp-packages/openssl/issues";
-    stability : "0";
-    licenses : {
-        openssl
-    };
+		[x64,v100,dynamic] {
+			alsoInclude : {
+				#destination = ${d_root}\include\${condition}\openssl;
+				..\output\v100\x64\release\include\openssl\opensslconf.h
+			};
+			lib: { 
+				..\output\v100\x64\release\libeay32.lib,
+				..\output\v100\x64\release\ssleay32.lib
+			};
+			bin += { 
+				..\output\v100\x64\release\libeay32.dll,
+				..\output\v100\x64\release\ssleay32.dll
+			};
+		}
+		
+	};
+	
+	// include\openssl\<misc.h>
+	// "openssl\....h"
+
+	// the VC++ .props file that gets generated and inserted into the ${d_content} folder
+	props { 
+		// we're going to generate a number of properties anyway. 
+        // so even if the packager doesn't specify the props object 
+        // we're going to make this file.
+	};
+
+	// the VC++ .targets file that gets generated and inserted into the ${d_content} folder
+	targets {
+		// every configuration needs to reference the include directories.
+		// Includes += ${pkg_root}${d_include};
+		// Defines += HAS_ZLIB;
+		
+		[Win32,v110,dynamic]
+		 Includes += ${pkg_root}${d_include};
+		[x64,v110,dynamic]
+		 Includes += ${pkg_root}${d_include};
+		[Win32,v100,dynamic]
+		 Includes += ${pkg_root}${d_include};
+		[x64,v100,dynamic]
+		 Includes += ${pkg_root}${d_include};
+
+	};
 }
 
-application {
-    include : {
-        exes,
-    };
-}
-
-manifest[things-that-need-them] {
-    // all of our EXEs need to get the manifest entries for the assemblies we're creating in this package
-    
-    assembly : {
-        "openssl[${flavor}]",
-    };
-    
-    include : { 
-        exes
-    };
-}
-
-manifest[things-that-need-them2] {
-    // all of our EXEs need to get the manifest entries for the assemblies we're creating in this package
-    
-    assembly : {
-        "zlib[${flavor}]",
-    };
-    
-    include : { 
-        dlls
-    };
-}
-
-assembly[openssl[${flavor}]] {
-    include : {
-        dlls
-    };
-}
-
-package-composition {
-    symlinks : { 
-        exes => @"${bin}\${each.Name}" = @"${packagedir}\${each.Name}";
-    };
-}
-
-signing {
-    attributes : {
-        company="Outercurve Foundation",
-        description="OpenSSL",
-        product-name="OpenSSL[${flavor}]",
-        product-version="${package-version}",
-        file-version="${package-version}",
-    };
-    
-    replace-signature: true; 
-    include: { 
-        files-to-sign
-    };    
-}

@@ -1,0 +1,17 @@
+nuget {
+	files {
+	
+		[Win32,v110,dynamic] 
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\Win32\v110\dynamic\zlib1.dll};
+		
+		[x64,v110,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\x64\v110\dynamic\zlib1.dll};
+				
+		[Win32,v100,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\Win32\v100\dynamic\zlib1.dll};
+		
+		[x64,v100,dynamic]
+			bin += {..\.nuget\zlib.1.2.7.14\lib\native\bin\x64\v100\dynamic\zlib1.dll};
+				
+	};
+};
