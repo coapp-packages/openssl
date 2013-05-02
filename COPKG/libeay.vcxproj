@@ -60,12 +60,14 @@
     <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='stdcall|StaticLibrary'">-static-stdcall</OutNameSuffix>
     <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='stdcall|ltcg'">-static-stdcall-ltcg</OutNameSuffix>
     <OutName>$(LibName)$(OutNameSuffix)</OutName>
-    <OutDir>..\Output\$(PlatformToolset)\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>.\$(PlatformToolset)\$(Platform)\$(Configuration)\$(ConfigurationType)\$(CallingConvention)\$(LibName)\</IntDir>
+    <ProjectRootDir Condition="'$(SolutionDir)' != ''">$(SolutionDir)</ProjectRootDir> 
+    <ProjectRootDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\</ProjectRootDir> 
+    <OutDir>$(ProjectRootDir)Output\$(PlatformToolset)\$(Platform)\$(Configuration)\$(ConfigurationType)\$(CallingConvention)\</OutDir> 
+    <IntDir>$(ProjectRootDir)Intermediate\$(PlatformToolset)\$(Platform)\$(Configuration)\$(ConfigurationType)\$(CallingConvention)\</IntDir>
     <OutBinDir>$(OutDir)bin\</OutBinDir>
     <OutLibDir>$(OutDir)lib\</OutLibDir>
     <TargetName>lib\$(OutName)</TargetName>
-    <CallingConvention-zlib>%(CallingConvention)</CallingConvention-zlib>
+    <CallingConvention-zlib>$(CallingConvention)</CallingConvention-zlib>
     <Linkage-zlib Condition="'$(ConfigurationType)'=='DynamicLibrary'">dynamic</Linkage-zlib>
     <Linkage-zlib Condition="'$(ConfigurationType)'=='StaticLibrary'">static</Linkage-zlib>
     <Linkage-zlib Condition="'$(ConfigurationType)'=='ltcg'">static</Linkage-zlib>
