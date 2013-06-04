@@ -30,13 +30,7 @@
     <CallingConvention>Cdecl</CallingConvention>
     <LibName>ssleay32</LibName>
   </PropertyGroup>
-  <Target Name="Info" BeforeTargets="Build">
-    <Message Text="  Configuration     :  '$(Configuration)'" />
-    <Message Text="  PlatformToolset   :  '$(PlatformToolset)'" />
-    <Message Text="  Platform          :  '$(Platform)'" />
-    <Message Text="  ConfigurationType :  '$(ConfigurationType)'" />
-    <Message Text="  CallingConvention :  '$(CallingConvention)'" />
-  </Target>
+  <Import Project="$(CoAppEtcDirectory)vcxproj.inc" Condition="Exists('$(CoAppEtcDirectory)vcxproj.inc')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Condition="exists('.\packages\zlib\build\native\zlib.props')" Project=".\packages\zlib\build\native\zlib.props" />
   <Import Condition="exists('.\packages\zlib.redist\build\native\zlib.redist.props')" Project=".\packages\zlib.redist\build\native\zlib.redist.props" />
@@ -46,28 +40,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <!--  <ExecutablePath>$(ExecutablePath);$(MSBuildProjectDirectory)\.\bin\</ExecutablePath>  -->
     <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
-    <!--  <TargetPath>$(OutDir)lib\$(ProjectName)$(TargetExt)</TargetPath>  -->
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='Cdecl|DynamicLibrary'"></OutNameSuffix>
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='Cdecl|StaticLibrary'">-static</OutNameSuffix>
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='Cdecl|ltcg'">-static-ltcg</OutNameSuffix>
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='stdcall|DynamicLibrary'">-stdcall</OutNameSuffix>
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='stdcall|StaticLibrary'">-static-stdcall</OutNameSuffix>
-    <OutNameSuffix Condition="'$(CallingConvention)|$(ConfigurationType)'=='stdcall|ltcg'">-static-stdcall-ltcg</OutNameSuffix>
-    <OutName>$(LibName)$(OutNameSuffix)</OutName>
-    <ProjectRootDir Condition="'$(SolutionDir)' != ''">$(SolutionDir)</ProjectRootDir> 
-    <ProjectRootDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)..\..\</ProjectRootDir> 
-    <OutDir>$(ProjectRootDir)Output\$(PlatformToolset)\$(Platform)\$(Configuration)\$(ConfigurationType)\$(CallingConvention)\</OutDir> 
-    <IntDir>$(ProjectRootDir)Intermediate\$(PlatformToolset)\$(Platform)\$(Configuration)\$(ConfigurationType)\$(CallingConvention)\</IntDir>
-    <OutBinDir>$(OutDir)bin\</OutBinDir>
-    <OutLibDir>$(OutDir)lib\</OutLibDir>
-    <TargetName>lib\$(OutName)</TargetName>
     <CallingConvention-zlib>$(CallingConvention)</CallingConvention-zlib>
-    <Linkage-zlib Condition="'$(ConfigurationType)'=='DynamicLibrary'"></Linkage-zlib>
-    <Linkage-zlib Condition="'$(ConfigurationType)'=='StaticLibrary'">static</Linkage-zlib>
-    <Linkage-zlib Condition="'$(ConfigurationType)'=='ltcg'">static</Linkage-zlib>
+    <Linkage-zlib>$(UsesConfigurationType)</Linkage-zlib>
+    <!--
+    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='DynamicLibrary'">dynamic</Linkage-zlib>
+    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='StaticLibrary'">static</Linkage-zlib>
+    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='ltcg'">ltcg</Linkage-zlib>
+    -->
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -81,38 +62,30 @@
       <PreprocessorDefinitions>OPENSSL_BUILD_SHLIBSSL;OPENSSL_NO_IDEA;OPENSSL_NO_RC5;OPENSSL_NO_MD2;OPENSSL_NO_KRB5;OPENSSL_NO_JPAKE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DSO_WIN32;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='DynamicLibrary'">_WINDLL;_REENTRANT;OPENSSL_NO_STATIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='StaticLibrary' Or '$(ConfigurationType)'=='ltcg'">OPENSSL_NO_DYNAMIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='StaticLibrary'">OPENSSL_NO_DYNAMIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Linkage-zlib)'=='dynamic'">ZLIB_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>OPENSSL_NO_ASM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CallingConvention>%(CallingConvention)</CallingConvention>
-      <RuntimeLibrary Condition="'$(Configuration)|$(ConfigurationType)'=='Debug|DynamicLibrary'">MultiThreadedDebugDLL</RuntimeLibrary>
-      <RuntimeLibrary Condition="'$(Configuration)|$(ConfigurationType)'=='Debug|StaticLibrary' Or '$(Configuration)|$(ConfigurationType)'=='Debug|ltcg'">MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeLibrary Condition="'$(Configuration)|$(ConfigurationType)'=='Release|DynamicLibrary'">MultiThreadedDLL</RuntimeLibrary>
-      <RuntimeLibrary Condition="'$(Configuration)|$(ConfigurationType)'=='Release|StaticLibrary' Or '$(Configuration)|$(ConfigurationType)'=='Release|ltcg'">MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TreatWarningAsError>false</TreatWarningAsError>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
-    <lib Condition="'$(ConfigurationType)'=='StaticLibrary' Or '$(ConfigurationType)'=='ltcg'">
+    <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <!--
       <IgnoreSpecificDefaultLibraries>zlib$(OutNameSuffix).lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <LinkTimeCodeGeneration Condition="'$(ConfigurationType)'=='ltcg'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-    </lib>
+      -->
+    </Lib>
     <Link>
-      <OutputFile>$(OutLibDir)lib\$(OutName)$(TargetExt)</OutputFile>
       <AllowIsolation>true</AllowIsolation>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalDependencies>ws2_32.lib;crypt32.lib;$(OutLibDir)libeay32$(OutNameSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutBinDir)$(OutName).dll</OutputFile>
-      <ProgramDatabaseFile>$(OutBinDir)$(OutName).pdb</ProgramDatabaseFile>
-      <ImportLibrary>$(OutLibDir)$(OutName).lib</ImportLibrary>
-      <ProfileGuidedDatabase>$(OutBinDir)$(OutName).pgd</ProfileGuidedDatabase>
-      <!-- <ModuleDefinitionFile>.\libeay32.def</ModuleDefinitionFile> -->
+      <AdditionalDependencies>ws2_32.lib;crypt32.lib;libeay32$(OutNameSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\ssleay32.def</ModuleDefinitionFile>
     </Link>
     <ResourceCompile>
@@ -121,7 +94,7 @@
       <PreprocessorDefinitions>OPENSSL_BUILD_SHLIBSSL;OPENSSL_NO_IDEA;OPENSSL_NO_RC5;OPENSSL_NO_MD2;OPENSSL_NO_KRB5;OPENSSL_NO_JPAKE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DSO_WIN32;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='DynamicLibrary'">_WINDLL;_REENTRANT;OPENSSL_NO_STATIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='StaticLibrary' Or '$(ConfigurationType)'=='ltcg'">OPENSSL_NO_DYNAMIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)'=='StaticLibrary'">OPENSSL_NO_DYNAMIC_ENGINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Linkage-zlib)'=='dynamic'">ZLIB_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>OPENSSL_NO_ASM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -244,7 +217,7 @@
     <Build-Perl-platform Condition="'$(Platform)'=='Win32'">VC-WIN32</Build-Perl-platform>
     <Build-Perl-platform Condition="'$(Platform)'=='x64'">VC-WIN64A</Build-Perl-platform>
     <Build-Perl-dll Condition="'$(ConfigurationType)'=='DynamicLibrary'">shared</Build-Perl-dll>
-    <Build-Perl-dll Condition="'$(ConfigurationType)'=='DynamicLibrary' Or '$(ConfigurationType)'=='ltcg'">no-shared</Build-Perl-dll>
+    <Build-Perl-dll Condition="'$(ConfigurationType)'=='StaticLibrary'">no-shared</Build-Perl-dll>
   </PropertyGroup>
   <Target Name="PerlDefs">
     <Exec 

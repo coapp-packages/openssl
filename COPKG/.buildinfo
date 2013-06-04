@@ -1,256 +1,31 @@
-@import "version.inc";
+@import default_tools;
 
-#define {
-    NewVersion : "${package-version++}";
-	PKT: "${pkt??1e373a58e25250cb}"; /* Ben's Public Key Token is 4f3043f9437157a6 */
-	NMAKE: "nmake";
-}
+default {
 
-#product-info  {
-    product-name: "openssl";
-    version: "1.0.1c";
-    original-source-location: "http://openssl.org/source/openssl-1.0.1c.tar.gz";
-    original-source-website: "http://openssl.org/";
-    license: "Custom - see LICENSE for detils";
-    packager: "Ben Herila, Hamish C, Vincent P, Garrett Serack";
-}
+	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
+		.PushEnvironment {};
+		.LoadSystemEnvironment {};
+        .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";
+		.Message.Text = @"
 
-/* 
-    Maintainer notes:
 
-    After extracting a tarball, make sure that the file "include/openssl/aes.h"
-    contains something that looks like a header file, rather than a single line
-    with the content "../../crypto/aes/aes.h". If it is a single line, that
-    means symlinks were extracted from the tarball incorrectly.
-    
-    After merging upstream branch, make sure you delete 
-    
-        Makefile
-        crypto\opensslconf.h
+        Env:        ${0}-${1}  :  ${2}  ${3}  ${4}
+        EnvExists:  $(IsEnvironmentValid)";
         
-    (they get modified by the build anyway) 
-    
-    .. otherwise ptk verify will fail
-*/
-
-test {
-    set: {
-        COMP="${COMP??vc11, vc10}";
-        PLAT="${PLAT??x86, x64}";
-    };
-
-    default : false;
-    build-command: @"
-        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}"" || goto failed
+        .Exec {
+            Condition="$(IsEnvironmentValid)";
+            Command = @"msbuild $(MSBuildThisFileDirectory)openssl.sln /p:PlatformToolset=${0};Platform=${1};Configuration=${2};UsesConfigurationType=${3};CallingConvention=${4}";
+        };
         
-        REM Start tests here...
-        for %%A in (${COMP}) do (
-            for %%B in (${PLAT}) do (
-                pushd output\%%A\%%B\Release
-                for /F %%E in ('type ..\..\..\..\COPKG\tests.txt') do (
-                    simplesigner --nologo --reference-assembly=""zlib[%%A], Version=1.2.5.0, PublicKeyToken=${PKT}, ProcessorArchitecture=%%B"" %%E || goto failed
-                    %%E > nul || (echo %%E failed... & goto failed)
-                )
-                popd
-            )
-        )
-    ";
-};
-
-package {
-    set: {
-        COMP="${COMP??vc11, vc10}";
-        PLAT="${PLAT??x86, x64}";
-    };
-    default : false;
-    
-    targets: { 
-        @"copkg\openssl[vc10]-${NewVersion}-x86.msi",
-        @"copkg\openssl-dev[vc10]-${NewVersion}-x86.msi",
-        @"copkg\openssl-dev-common-${NewVersion}-any.msi",
-        @"copkg\openssl[vc10]-${NewVersion}-x64.msi",
-        @"copkg\openssl-dev[vc10]-${NewVersion}-x64.msi"
-    };
-    
-    build-command : @"
-        if ""${BUILT}"" neq ""true"" ptk release --nologo --COMP=""${COMP}"" --PLAT=""${PLAT}"" || goto failed
-        if ""${noversion}"" neq ""true"" ptk update-version --nologo || goto failed
-
-        REM Need to perform some initial file mojo here to cover the various include files... (OpenSSL specific)
-        pushd output
-            if not exist includes mkdir includes
-            set COMP_DIR=NA
-            for /F %%A in ('dir /b') do set COMP_DIR=%%A
-            copy /y %COMP_DIR%\x86\release\include\openssl\* includes\
-            pushd includes
-                ren opensslconf.h opensslconf_x86.h
-                copy /y ..\%COMP_DIR%\x64\release\include\openssl\opensslconf.h .\opensslconf_x64.h
-                copy /y ..\..\COPKG\opensslconf.h .\
-            popd
-        popd
-    
-        REM THERE IS SOME GOOFY STUFF IN HERE TO WORK AROUND A COUPLE BUGS IN AUTOPACKAGE.
-        REM FIXES COMING SOON...
-        cd COPKG
-        autopackage openssl-dev-common.autopkg || goto failed
-        for %%A in (${COMP}) do (
-            for %%B in (${PLAT}) do (
-                autopackage openssl.autopkg openssl-dev.autopkg --COMP=%%A --PLAT=%%B
-            )
-        )
-    ";
-
-	clean-command: @"
-        del COPKG\*.msi COPKG\*.wixpdb
-        pushd output
-        rd /s /q includes
-        popd
-    ";
+        .PopEnvironment{};
+	};
 	
 };
 
-
-update-version {
-    default : false;
-    
-    build-command : @"
-        REM auto-increment version.inc file...
-        
-        pushd COPKG
-        setlocal EnableDelayedExpansion
-        set VERSTRING=#define { package-version: ${NewVersion}; }
-        echo !VERSTRING! > version.inc
-        popd
-    ";
-}
-
-release {
-    set: {
-        BuildCfg="Release";
-        COMP="${COMP??vc11, vc10}";
-        PLAT="${PLAT??x86, x64}";
-    };
-    build-command: @"
-        for %%A in (${COMP}) do (
-            for %%B in (${PLAT}) do (
-                ptk --nologo %%B --COMP=%%A || goto failed
-                ptk clean --nologo %%B --COMP=%%A || goto failed
-            )
-        )
-    ";
+clean {
+    .RemoveDir.Directories = @"$(MSBuildThisFileDirectory).\intermediate";
 };
 
-all {
-    default: false;
-    clean-command: @"
-		nmake /f ms\ntdll86.mak clean   > nul 2> nul
-        rmdir /s /q intermediate        > nul 2> nul
-        rmdir /s /q output              > nul 2> nul
-        del COPKG\*.msi COPKG\*.wixpdb  > nul 2> nul
-    ";
-};
-
-prep {
-    default : false;
-
-    build-command:@"
-        mkdir intermediate
-        mkdir intermediate\${COMP}
-        mkdir intermediate\${COMP}\${OUTPUT_ARCH}
-        mkdir intermediate\${COMP}\${OUTPUT_ARCH}\${BuildCfg}
-        
-        mkdir output
-        mkdir output\${COMP}
-        mkdir output\${COMP}\${OUTPUT_ARCH}
-        mkdir output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}
-        mkdir output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\include
-    ";
-
-    clean-command:@"
-        rmdir /s /q intermediate\${COMP}\${OUTPUT_ARCH}\${BuildCfg} > nul 2> nul
-        rmdir /s /q intermediate\${COMP}\${OUTPUT_ARCH}             > nul 2> nul
-        rmdir /s /q intermediate\${COMP}                            > nul 2> nul
-        rmdir /s /q intermediate                                    > nul 2> nul
-    ";    
-};
-
-	
-x86{
-    tools: { perl, nasm }; // we should have a check in PTK that can verify these are available.
-    
-	set: COMP="${COMP??vc11}";
-    set: OUTPUT_ARCH="x86";
-    uses : prep;
-
-	
-    compiler: "${COMP}";
-    platform: x86;
-     
-	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-${PKT}";
-	requires: "nasm-2-1e373a58e25250cb";
-
-    targets: { 
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.dll",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.lib",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.dll",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.lib",       
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\openssl.exe",   
-    };
-     
-    build-command:@"
-       REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
-       echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED -I %cd%\output
-
-       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN32 -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x86""
-	   call ms\do_nasm
-	   call ms\do_ms
-	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}/include\"" } | sc ms\ntdll86.mak""
-       ${NMAKE} -f ms\ntdll86.mak
-    ";
-     
-    clean-command:@"
-        del /Q MINFO Makefile.bak Makefile crypto\buildinf.h crypto\opensslconf.h.bak crypto\opensslconf.h > NUL 2> NUL
-        pushd ms
-        del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc > NUL 2> NUL
-        popd
-    ";
-};
-
-x64 {
-	set: COMP="${COMP??vc10}";
-    set: OUTPUT_ARCH="x64";
-    uses : prep;
-	
-    compiler: "${COMP}";
-    platform: x64;
-
-	requires: "zlib-dev[${COMP}]-1.2.5-${OUTPUT_ARCH}-${PKT}";
-	requires: "nasm-2-1e373a58e25250cb";
-     
-    targets: { 
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.dll",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\libeay32.lib",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.dll",
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\ssleay32.lib",  
-        "output\${COMP}\${OUTPUT_ARCH}\${BuildCfg}\openssl.exe", 
-    };
-     
-    build-command:@"
-        REM this makes it so that DLLs can have their own SxS Activation Context in an embedded resource.
-        echo %CL% | findstr ISOLATION_AWARE || set CL=%CL% -D ISOLATION_AWARE_ENABLED /U NOUSER -I %cd%\output
-        
-       perl Configure no-rc5 no-idea enable-mdc2 enable-zlib VC-WIN64A -I""%COAPP%/include/zlib"" -L""%COAPP%/lib/x64"" 
-       call ms\do_win64a
-
-	   powershell -command ""cat ms\ntdll.mak | ForEach-Object{ $_ -replace \""out32dll\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""tmp32dll\"", \""intermediate/${COMP}/${OUTPUT_ARCH}/${BuildCfg}\"" } | ForEach-Object{ $_ -replace \""inc32\"", \""output/${COMP}/${OUTPUT_ARCH}/${BuildCfg}/include\"" } | sc ms\ntdll64.mak""
-
-       ${NMAKE} -f ms\ntdll64.mak	|| goto failed
-    ";
-     
-    clean-command:@"
-        del /Q MINFO Makefile.bak Makefile crypto\buildinf.h crypto\opensslconf.h.bak crypto\opensslconf.h > NUL 2> NUL
-        pushd ms
-        del /Q bcb.mak libeay32.def nt.mak ntdll.mak ssleay32.def uptable.asm uptable.obj version32.rc ntdll64.mak > NUL 2> NUL
-        popd
-    ";
+nuke {
+    .RemoveDir.Directories = @"$(MSBuildThisFileDirectory).\output";
 };

@@ -1,10 +1,5 @@
 @import @"version.inc";
 
-
-
-configurations {
-};
-
 nuget {
 	// the nuspec file metadata. Gets created/updated on build
 	nuspec {
@@ -28,7 +23,7 @@ nuget {
 
     dependencies {
         packages : {
-            zlib/1.2.7.27
+            zlib/1.2.8.1
         };
     }
     
@@ -53,277 +48,22 @@ nuget {
         
 		docs: {  ..\doc\**\* };
         
-		[Win32,v110,dynamic,debug] { 
-			alsoInclude += {
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
+		("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg", "cdecl") => {
+			[${0},${1},${2},${3},${4}] {
+				lib:         { .\output\${0}\${1}\${2}\${3}\${4}\lib\libeay32.lib;
+				               .\output\${0}\${1}\${2}\${3}\${4}\lib\ssleay32.lib };
+				alsoInclude: { .\output\${0}\${1}\${2}\${3}\${4}\lib\include\openssl\opensslconf.h };
+				source:      { .\output\${0}\${1}\${2}\${3}\${4}\lib\include\openssl\opensslconf.h };
 			};
-			lib: { 
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\lib\ssleay32.lib
+		};
+		("v100,v110", "Win32,x64", "release,debug", "Dynamic", "cdecl") => {
+			[${0},${1},${2},${3},${4}] {
+				bin:     { .\output\${0}\${1}\${2}\${3}\${4}\lib\libeay32.dll;
+                           .\output\${0}\${1}\${2}\${3}\${4}\lib\ssleay32.dll };
+				symbols: { .\output\${0}\${1}\${2}\${3}\${4}\lib\libeay32.pdb;
+                           .\output\${0}\${1}\${2}\${3}\${4}\lib\ssleay32.pdb };
 			};
-			bin += { 
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v110\Win32\debug\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v110\Win32\debug\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v110\Win32\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v110,dynamic,debug] {
-			alsoInclude += {
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v110\x64\debug\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v110\x64\debug\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v110\x64\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v100,dynamic,debug] { 
-			alsoInclude += {
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v100\Win32\debug\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v100\Win32\debug\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v100\Win32\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v100,dynamic,debug] {
-			alsoInclude += {
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v100\x64\debug\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v100\x64\debug\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v100\x64\debug\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v110,static,debug] { 
-			alsoInclude += {
-				.\output\v110\Win32\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\Win32\debug\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v110\Win32\debug\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v110\Win32\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v110,static,debug] {
-			alsoInclude += {
-				.\output\v110\x64\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\x64\debug\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v110\x64\debug\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v110\x64\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v100,static,debug] { 
-			alsoInclude += {
-				.\output\v100\Win32\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\Win32\debug\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v100\Win32\debug\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v100\Win32\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v100,static,debug] {
-			alsoInclude += {
-				.\output\v100\x64\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\x64\debug\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v100\x64\debug\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v100\x64\debug\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v110,dynamic,release] { 
-			alsoInclude += {
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v110\Win32\release\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v110\Win32\release\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v110\Win32\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v110,dynamic,release] {
-			alsoInclude += {
-				.\output\v110\x64\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\x64\release\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v110\x64\release\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v110\x64\release\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v110\x64\release\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v110\x64\release\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v110\x64\release\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v110\x64\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v100,dynamic,release] { 
-			alsoInclude += {
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v100\Win32\release\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v100\Win32\release\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v100\Win32\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v100,dynamic,release] {
-			alsoInclude += {
-				.\output\v100\x64\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\x64\release\DynamicLibrary\cdecl\lib\libeay32.lib,
-				.\output\v100\x64\release\DynamicLibrary\cdecl\lib\ssleay32.lib
-			};
-			bin += { 
-				.\output\v100\x64\release\DynamicLibrary\cdecl\bin\libeay32.dll, 
-				.\output\v100\x64\release\DynamicLibrary\cdecl\bin\ssleay32.dll, 
-			};
-            symbols : {
-                .\output\v100\x64\release\DynamicLibrary\cdecl\bin\libeay32.pdb,
-                .\output\v100\x64\release\DynamicLibrary\cdecl\bin\ssleay32.pdb,
-            };
-			source += {
-				.\output\v100\x64\release\DynamicLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v110,static,release] { 
-			alsoInclude += {
-				.\output\v110\Win32\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\Win32\release\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v110\Win32\release\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v110\Win32\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v110,static,release] {
-			alsoInclude += {
-				.\output\v110\x64\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v110\x64\release\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v110\x64\release\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v110\x64\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-		
-		[Win32,v100,static,release] { 
-			alsoInclude += {
-				.\output\v100\Win32\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\Win32\release\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v100\Win32\release\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v100\Win32\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
-
-		[x64,v100,static,release] {
-			alsoInclude += {
-				.\output\v100\x64\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-			lib: { 
-				.\output\v100\x64\release\StaticLibrary\cdecl\lib\libeay32-static.lib,
-				.\output\v100\x64\release\StaticLibrary\cdecl\lib\ssleay32-static.lib
-			};
-			source += {
-				.\output\v100\x64\release\StaticLibrary\cdecl\include\openssl\opensslconf.h
-			};
-		}
+		};
 		
 	};
 	
@@ -341,69 +81,11 @@ nuget {
 		Includes += ${pkg_root}${d_include};
 		// Defines += HAS_ZLIB;
 		
-		[Win32,v110,dynamic,debug] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v110,dynamic,debug] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[Win32,v100,dynamic,debug] {
-		    Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v100,dynamic,debug] {
-		    Includes += ${pkg_root}${d_include};
-        }
-		
-		[Win32,v110,static,debug] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v110,static,debug] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[Win32,v100,static,debug] {
-		    Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v100,static,debug] {
-		    Includes += ${pkg_root}${d_include};
-        }
-        
-		[Win32,v110,dynamic,release] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v110,dynamic,release] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[Win32,v100,dynamic,release] {
-		    Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v100,dynamic,release] {
-		    Includes += ${pkg_root}${d_include};
-        }
-		
-		[Win32,v110,static,release] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v110,static,release] {
-            Includes += ${pkg_root}${d_include};
-        }
-        
-		[Win32,v100,static,release] {
-		    Includes += ${pkg_root}${d_include};
-        }
-        
-		[x64,v100,static,release] {
-		    Includes += ${pkg_root}${d_include};
-        }
+        ("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg", "cdecl") => {
+			[${0},${1},${2},${3},${4}] {
+                Includes += ${pkg_root}${d_include};
+            };
+        };
         
 	};
 }
