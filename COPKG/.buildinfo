@@ -2,7 +2,12 @@
 
 default {
 
-	("v110, v100", "Win32, x64", "Debug,Release", "Dynamic, Static, ltcg", "cdecl") => {
+    .Exec {
+        Condition="Exists('$(MSBuildThisFileDirectory)packages.config')";
+        Command = @"nuget install $(MSBuildThisFileDirectory)packages.config -x -OutputDirectory .\packages >nul";
+    };
+
+	(PlatformToolsets, Architectures, ReleaseOrDebug, Linkage, "cdecl") => {
 		.PushEnvironment {};
 		.LoadSystemEnvironment {};
         .SetEnvironmentFromTarget.Target = "VC_${0}_${1}";

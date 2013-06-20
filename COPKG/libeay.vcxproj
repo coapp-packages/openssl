@@ -798,6 +798,23 @@
         DestinationFolder="$(OutDir)Include\openssl\" />
   </Target>
   <PropertyGroup>
-    <BuildDependsOn>PerlDefs;$(BuildDependsOn)</BuildDependsOn>
+    <AA1 Condition="( $(PlatformToolset.ToLower().IndexOf('v110')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' )">true</AA1>
+    <AA2 Condition="'$(Platform.ToLower())' == 'win32'">true</AA2>
+    <AA3 Condition="( $(Configuration.ToLower().IndexOf('debug')) == -1 )">true</AA3>
+    <AA4 Condition="'$(Linkage-zlib.ToLower())' == 'dynamic'">true</AA4>
+    <AA5 Condition="'$(CallingConvention-zlib.ToLower())' == 'cdecl'">true</AA5>
+  </PropertyGroup>
+  <Target Name="Info2" BeforeTargets="Build">
+    <Message Text="*******************************************************************************" Importance="high" />
+    <Message Text="*  PlatformToolset : '$(AA1)'" Importance="high" />
+    <Message Text="*  Platform        : '$(AA2)'" Importance="high" />
+    <Message Text="*  Configuration   : '$(AA3)'" Importance="high" />
+    <Message Text="*  Linkage         : '$(AA4)'" Importance="high" />
+    <Message Text="*  CallingConv     : '$(AA5)'" Importance="high" />
+    <Message Text="*******************************************************************************" Importance="high" />
+    <MakeDir Directories="$(OutDir);$(IntDir);$(TargetDir)"/>
+  </Target>
+  <PropertyGroup>
+    <BuildDependsOn>Info2;PerlDefs;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 </Project>
