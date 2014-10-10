@@ -48,20 +48,20 @@ nuget {
         
 		docs: {  ..\doc\**\* };
         
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg") => {
+		("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic,Static", "cdecl,stdcall") => {
 			[${0},${1},${2},${3}] {
-				lib:         { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.lib;
-				               .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.lib };
-				alsoInclude: { .\output\${0}\${1}\${2}\${3}\cdecl\include\openssl\opensslconf.h };
-				source:      { .\output\${0}\${1}\${2}\${3}\cdecl\include\openssl\opensslconf.h };
+				lib:         { .\output\${0}\${1}\${2}\${3}\${4}\libeay32.lib;
+				               .\output\${0}\${1}\${2}\${3}\${4}\ssleay32.lib };
+				alsoInclude: { .\output\${0}\${1}\${2}\${3}\${4}\include\openssl\opensslconf.h };
+				source:      { .\output\${0}\${1}\${2}\${3}\${4}\include\openssl\opensslconf.h };
 			};
 		};
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic") => {
+		("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic", "cdecl,stdcall") => {
 			[${0},${1},${2},${3}] {
-				bin:     { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.dll;
-                           .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.dll };
-				symbols: { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.pdb;
-                           .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.pdb };
+				bin:     { .\output\${0}\${1}\${2}\${3}\${4}\libeay32.dll;
+                           .\output\${0}\${1}\${2}\${3}\${4}\ssleay32.dll };
+				symbols: { .\output\${0}\${1}\${2}\${3}\${4}\libeay32.pdb;
+                           .\output\${0}\${1}\${2}\${3}\${4}\ssleay32.pdb };
 			};
 		};
 		
@@ -81,8 +81,8 @@ nuget {
 		Includes += ${pkg_root}${d_include};
 		// Defines += HAS_ZLIB;
 		
-        ("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg") => {
-			[${0},${1},${2},${3}] {
+        ("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic,Static", "cdecl,stdcall") => {
+			[${0},${1},${2},${3},${4}] {
                 Includes += ${pkg_root}${d_include};
             };
         };

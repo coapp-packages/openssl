@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libeay", "libeay.vcxproj", "{BE42CA67-7C48-4882-BE59-111CB41142BE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libeay32", "libeay32.vcxproj", "{BE42CA67-7C48-4882-BE59-111CB41142BE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ssleay", "ssleay.vcxproj", "{7E05608D-A775-418F-946A-E9A0B84C6DFF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ssleay32", "ssleay32.vcxproj", "{7E05608D-A775-418F-946A-E9A0B84C6DFF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BE42CA67-7C48-4882-BE59-111CB41142BE} = {BE42CA67-7C48-4882-BE59-111CB41142BE}
 	EndProjectSection

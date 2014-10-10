@@ -7,6 +7,18 @@ if "%1"=="noclean" (
 	shift)
 
 setlocal
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64
+call :build x64 Release v120 || goto :eof
+call :build x64 Debug v120 || goto :eof
+endlocal
+
+setlocal
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+call :build Win32 Release v120 || goto :eof
+call :build Win32 Debug v120 || goto :eof
+endlocal
+
+setlocal
 call "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat" amd64
 call :build x64 Release v110 || goto :eof
 call :build x64 Debug v110 || goto :eof
@@ -35,9 +47,12 @@ if "%__NOCLEAN__%"=="true" goto :eof
 goto :clean
 
 :build
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=DynamicLibrary .\openssl.sln || goto :eof
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=StaticLibrary .\openssl.sln || goto :eof
-REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:ConfigurationType=ltcg .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=dynamic /P:ConfigurationType=DynamicLibrary /P:CallingConvention=cdecl .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=dynamic /P:ConfigurationType=DynamicLibrary /P:CallingConvention=stdcall .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=static /P:ConfigurationType=StaticLibrary /P:CallingConvention=cdecl .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=static /P:ConfigurationType=StaticLibrary /P:CallingConvention=stdcall .\openssl.sln || goto :eof
+REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=ltcg /P:ConfigurationType=ltcg /P:CallingConvention=cdecl .\openssl.sln || goto :eof
+REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=ltcg /P:ConfigurationType=ltcg /P:CallingConvention=stdcall .\openssl.sln || goto :eof
 goto :eof
 
 :clean
