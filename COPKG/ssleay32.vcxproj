@@ -28,7 +28,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CallingConvention>Cdecl</CallingConvention>
-    <OutputPath>output\$(PlatformToolset)\$(Platform)\$(Configuration)\$(UsesConfigurationType)\$(CallingConvention)\</OutputPath>
+    <OutputPath>output\$(PlatformToolset)\$(Platform)\$(Configuration)\$(UsesConfigurationType)\</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
   <Import Project="$(CoAppEtcDirectory)vcxproj.inc" Condition="Exists('$(CoAppEtcDirectory)vcxproj.inc')" />
@@ -190,6 +190,7 @@
     <ClCompile Include="..\ssl\ssl_ciph.c" />
     <ClCompile Include="..\ssl\s2_srvr.c" />
     <ClCompile Include="..\ssl\ssl_err.c" />
+    <ClCompile Include="..\ssl\ssl_utst.c" />
     <ClCompile Include="..\ssl\s2_clnt.c" />
     <ClCompile Include="..\ssl\s3_pkt.c" />
     <ClCompile Include="..\ssl\d1_srvr.c" />

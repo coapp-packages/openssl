@@ -47,12 +47,9 @@ if "%__NOCLEAN__%"=="true" goto :eof
 goto :clean
 
 :build
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=dynamic /P:ConfigurationType=DynamicLibrary /P:CallingConvention=cdecl .\openssl.sln || goto :eof
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=dynamic /P:ConfigurationType=DynamicLibrary /P:CallingConvention=stdcall .\openssl.sln || goto :eof
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=static /P:ConfigurationType=StaticLibrary /P:CallingConvention=cdecl .\openssl.sln || goto :eof
-msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=static /P:ConfigurationType=StaticLibrary /P:CallingConvention=stdcall .\openssl.sln || goto :eof
-REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=ltcg /P:ConfigurationType=ltcg /P:CallingConvention=cdecl .\openssl.sln || goto :eof
-REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=ltcg /P:ConfigurationType=ltcg /P:CallingConvention=stdcall .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=dynamic /P:ConfigurationType=DynamicLibrary .\openssl.sln || goto :eof
+msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=static /P:ConfigurationType=StaticLibrary .\openssl.sln || goto :eof
+REM msbuild /P:Platform=%1 /P:Configuration=%2 /P:PlatformToolset=%3 /P:UsesConfigurationType=ltcg /P:ConfigurationType=ltcg .\openssl.sln || goto :eof
 goto :eof
 
 :clean
