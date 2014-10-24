@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project InitialTargets="Info" DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -28,7 +28,8 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CallingConvention>Cdecl</CallingConvention>
-    <LibName>ssleay32</LibName>
+    <OutputPath>output\$(PlatformToolset)\$(Platform)\$(Configuration)\$(UsesConfigurationType)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
   <Import Project="$(CoAppEtcDirectory)vcxproj.inc" Condition="Exists('$(CoAppEtcDirectory)vcxproj.inc')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -44,11 +45,6 @@
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
     <CallingConvention-zlib>$(CallingConvention)</CallingConvention-zlib>
     <Linkage-zlib>$(UsesConfigurationType)</Linkage-zlib>
-    <!--
-    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='DynamicLibrary'">dynamic</Linkage-zlib>
-    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='StaticLibrary'">static</Linkage-zlib>
-    <Linkage-zlib Condition="'$(UsesConfigurationType)'=='ltcg'">ltcg</Linkage-zlib>
-    -->
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -194,6 +190,7 @@
     <ClCompile Include="..\ssl\ssl_ciph.c" />
     <ClCompile Include="..\ssl\s2_srvr.c" />
     <ClCompile Include="..\ssl\ssl_err.c" />
+    <ClCompile Include="..\ssl\ssl_utst.c" />
     <ClCompile Include="..\ssl\s2_clnt.c" />
     <ClCompile Include="..\ssl\s3_pkt.c" />
     <ClCompile Include="..\ssl\d1_srvr.c" />

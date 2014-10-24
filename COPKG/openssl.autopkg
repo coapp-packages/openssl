@@ -15,7 +15,7 @@ nuget {
 		summary:An OpenSSL library;
 		description: @"Native OpenSSL library.
 	OpenSSL homepage:  http://www.openssl.org";
-		releaseNotes: "Release of OpenSSL 1.0.1e libraries.";
+		releaseNotes: "Release of OpenSSL 1.0.1i libraries.";
 		copyright: Copyright 2013;
 		tags: { openssl, native, CoApp };
 
@@ -23,7 +23,7 @@ nuget {
 
     dependencies {
         packages : {
-            zlib/1.2.8.1
+            zlib/1.2.8.7
         };
     }
     
@@ -48,20 +48,20 @@ nuget {
         
 		docs: {  ..\doc\**\* };
         
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg") => {
+		("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic,Static") => {
 			[${0},${1},${2},${3}] {
-				lib:         { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.lib;
-				               .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.lib };
-				alsoInclude: { .\output\${0}\${1}\${2}\${3}\cdecl\include\openssl\opensslconf.h };
-				source:      { .\output\${0}\${1}\${2}\${3}\cdecl\include\openssl\opensslconf.h };
+				lib:         { .\output\${0}\${1}\${2}\${3}\libeay32.lib;
+				               .\output\${0}\${1}\${2}\${3}\ssleay32.lib };
+				alsoInclude: { .\output\${0}\${1}\${2}\${3}\include\openssl\opensslconf.h };
+				source:      { .\output\${0}\${1}\${2}\${3}\include\openssl\opensslconf.h };
 			};
 		};
-		("v100,v110", "Win32,x64", "release,debug", "Dynamic") => {
+		("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic") => {
 			[${0},${1},${2},${3}] {
-				bin:     { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.dll;
-                           .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.dll };
-				symbols: { .\output\${0}\${1}\${2}\${3}\cdecl\libeay32.pdb;
-                           .\output\${0}\${1}\${2}\${3}\cdecl\ssleay32.pdb };
+				bin:     { .\output\${0}\${1}\${2}\${3}\libeay32.dll;
+                           .\output\${0}\${1}\${2}\${3}\ssleay32.dll };
+				symbols: { .\output\${0}\${1}\${2}\${3}\libeay32.pdb;
+                           .\output\${0}\${1}\${2}\${3}\ssleay32.pdb };
 			};
 		};
 		
@@ -81,7 +81,7 @@ nuget {
 		Includes += ${pkg_root}${d_include};
 		// Defines += HAS_ZLIB;
 		
-        ("v100,v110", "Win32,x64", "release,debug", "Dynamic,Static,ltcg") => {
+        ("v100,v110,v120", "Win32,x64", "release,debug", "Dynamic,Static") => {
 			[${0},${1},${2},${3}] {
                 Includes += ${pkg_root}${d_include};
             };
